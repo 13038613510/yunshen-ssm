@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:p="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+
+">
+    <!-- 引入mydata.properties配置文件   -->
+    <bean name="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations" value="classpath:mydata.properties"></property>
+        <property name="fileEncoding" value="UTF-8"></property>
+     </bean>
+
+    <!-- 告诉spring扫描范围（小范围效率高）-->
+    <context:component-scan base-package="org.spoto.service.impl,org.spoto.aop"></context:component-scan>
+
+<!--    <bean name="loginService" class="org.spoto.service.impl.LoginServiceImpl">-->
+<!--        <property name="uname" value="zzzz"></property>-->
+<!--    </bean>-->
+
+
+    <!-- aop配置，可配置多个   -->
+    <aop:config>
+        <!--  其中一个配置    -->
+        <!--   ref要注入切面     -->
+        <aop:aspect ref="aopDemo">
+            <aop:before method="beforeFun" pointcut="execution(* *.*(..))"></aop:before>
+            <aop:after method="afterFun" pointcut="execution(* *.do*(..))"></aop:after>
+        </aop:aspect>
+    </aop:config>
+
+<!--  execution(* *.*(..))  -->
+<!-- 外壳： execution()-->
+<!--  表达式：  * *.*(..)-->
+<!--    *                *           .    *  (..)-->
+<!--    LoginServlet LoginServiceImpl.doLogin(String name, String passwd)-->
+
+</beans>

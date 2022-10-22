@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<title>tab</title>
+		<link rel="stylesheet" href="3rd/bootstrap/css/bootstrap.min.css"/>
+		<style>
+			body{
+				padding: 5px;
+			}
+			.my-pan{
+				margin-bottom: 5px;
+			}
+			.mynav{
+				text-align: right;
+			}
+			.mynav > nav > ul{
+				margin: 0;
+			}
+			.mytable{
+				margin: 5px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="app">
+			<!-- Modal -->
+			<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+				<div class="modal-dialog " role="document" style="width: 450px;">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+							<h4 class="modal-title" id="myModalLabel">编辑数据</h4>
+						</div>
+						<div class="modal-body">
+								<div class="form-group">
+									<label for="unme">姓名</label>
+									<input type="text" class="form-control" id="unme" placeholder="请输入姓名" v-model="ed.name">
+								</div>
+								<div class="form-group">
+									<label>性别</label>
+									<input id="sexna" type="radio" name="sex" value="0" v-model="ed.sex"><label for="sexna"> 男</label>
+									<input id="sexnv" type="radio" name="sex" value="1" v-model="ed.sex"><label for="sexnv"> 女</label>
+									<!--<input type="text" class="form-control" id="usex" placeholder="请输入性别" v-model="ed.edsex">-->
+								</div>
+								<div class="form-group">
+									<label for="uage">年龄</label>
+									<input type="text" class="form-control" id="uage" placeholder="请输入年龄" v-model="ed.age">
+								</div>
+								<div class="form-group">
+									<label for="ujs">角色</label>
+									<input type="text" class="form-control" id="ujs" placeholder="请输入角色" v-model="ed.juese">
+								</div>
+
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" @click="closeMo()" >关闭</button>
+							<button type="button" class="btn btn-primary" @click="save()">保存</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="panel panel-default my-pan">
+				<div class="panel-heading">用户数据列表</div>
+				<div class="panel-body">
+					<form class="form-inline">
+						<button type="button" class="btn btn-info" @click="selAll()">{{selType ? '取消' : '全选'}}</button>
+						<button type="button" class="btn btn-success" @click="add()">新增</button>
+						<button type="button" class="btn btn-danger" @click="delMore()">删除</button>
+						<div class="form-group">
+							<label for="username">用户名</label>
+							<input type="text" class="form-control" id="username" placeholder="请输入用户名" v-model="sd.uname">
+						</div>
+						<div class="form-group">
+							<label for="email">邮箱</label>
+							<input type="email" class="form-control" id="email" placeholder="请输入邮箱">
+						</div>
+						<button type="button" class="btn btn-default" @click="doSearch()">搜索</button>
+					</form>
+				</div>
+			</div>
+
+			<table class="table table-striped table-bordered table-hover ">
+
+				<thead>
+					<tr>
+						<td>选择</td>
+						<td>序号</td>
+						<td>姓名</td>
+						<td>性别</td>
+						<td>年龄</td>
+						<td>角色</td>
+						<td>操作</td>
+					</tr>
+				</thead>
+					<tbody>
+						<tr v-for="(data,i) in dataList">
+							<td>
+								<input type="checkbox" :value="data.id" v-model="ids"/>
+							</td>
+							<td>{{i + 1}}</td>
+							<td>{{data.name}}</td>
+							<td>{{data.sex == 0 ? '男' : '女'}}</td>
+							<td>{{data.age}}</td>
+							<td>{{data.juese}}</td>
+							<td>
+								<button class="btn btn-info btn-xs" @click="edit(data)">编辑</button>
+								<button class="btn btn-danger btn-xs" @click="del(data.id)">删除</button>
+							</td>
+						</tr>
+					</tbody>
+
+
+			</table>
+			<div class="mynav">
+				<nav aria-label="Page navigation">
+					<ul class="pagination">
+						<li><a @click="upPage()" >上页</a></li>
+						<li><a @click="downPage()">下页</a></li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+
+
+
+		<script src="3rd/vue/vue.min.js"></script>
+		<script src="3rd/jquery-2.2.4.min.js"></script>
+		<script src="3rd/bootstrap/js/bootstrap.min.js"></script>
+		<script src="3rd/layer/layer.js"></script>
+		<script>
+			var vm = new Vue({
+				el:'.app',
+				data:{
+					//当前页
+					pageIndex: 1,
+					//最大页
+					maxPage:1,
+					//列表数据
+					dataList:[],
+					//编辑角色数据
+					ed: {
+						id:0,
+						name:'',
+						sex:'',
+						age:'',
+						juese:''
+					},
+					sd: {
+						uname: ''
+					},
+					ids: [],
+					selType: false
+				},
+				methods:{
+					//全选
+					selAll: function (){
+						if (this.selType){
+							//取消
+							this.ids = [];
+						}else {
+							//全选
+							for (var i in this.dataList){
+								var id = this.dataList[i].id;
+								this.ids.push(id);
+							}
+						}
+						this.selType = !this.selType;
+					},
+					//多选删除
+					delMore: function (){
+						var idStr = this.ids.join(",");
+						if (idStr == ""){
+							layer.msg("请选择要删除的数据");
+							return;
+						}
+						this.del(idStr);
+					},
+
+					//保存方法
+					save: function (){
+						$.ajax({
+							url:"tab-save",
+							type:"POST",
+							dataType:"JSON",
+							data: vm.ed,
+							success:function (resp){
+								if (resp.type) {
+									//成功
+									layer.msg('数据保存成功！');
+									vm.closeMo();
+									vm.getData();
+								} else {
+									layer.msg('数据保存失败');
+								}
+							},
+							error:function (resp){
+								layer.msg('系统错误');
+
+							}
+						});
+					},
+					//新增方法
+					add: function (){
+						this.ed = {
+							id:0,
+							name:'',
+							sex:'',
+							age:'',
+							juese:''
+						};
+						this.openMo();
+					},
+					//编辑方法
+					edit:function (data){
+						this.ed.id = data.id;
+						this.ed.name = data.name;
+						this.ed.sex = data.sex;
+						this.ed.age = data.age;
+						this.ed.juese = data.juese;
+						this.openMo();
+					},
+					//打开模态框
+					openMo: function (){
+						$('#myModal').modal({
+							show:true,
+							keyboard:false,
+							backdrop:'static'
+						});
+					},
+					//关闭模态框
+					closeMo: function (){
+						$('#myModal').modal('hide');
+					},
+
+					//删除方法
+					del: function (ids){
+						//询问问题
+						layer.confirm('确定要删除吗？', {
+							btn: ['确定','取消'] //按钮
+						}, function(){
+							//确定
+							$.ajax({
+								url: "tab-del",
+								type: "POST",
+								dataType: "JSON",
+								data: {
+									ids: ids
+								},
+								success: function (resp) {
+									if (resp.type) {
+										//成功
+										layer.alert('删除成功！');
+										vm.getData();
+									} else {
+										layer.alert("数据删除失败");
+									}
+								},
+								error: function (resp) {
+									layer.alert("系统错误")
+
+								}
+							});
+						}, function(){
+							//取消
+						});
+
+					},
+
+					//上一页方法
+					upPage:function (){
+						this.pageIndex = this.pageIndex - 1;
+						if (this.pageIndex < 1){
+							this.pageIndex = 1;
+							return;
+						}
+						this.getData();
+					},
+					//下一页方法
+					downPage:function (){
+						this.pageIndex = this.pageIndex + 1;
+						if (this.pageIndex > this.maxPage){
+							this.pageIndex = this.maxPage;
+							return;
+						}
+						this.getData();
+					},
+					//搜索
+					doSearch: function (){
+						this.pageIndex = 1;
+						this.getData();
+					},
+					//获取数据
+					getData:function (){
+						//如果在jQuery对象里面写this，这个时候this代表jQuery对象，非vue对象
+						$.ajax({
+							url:"tab-list",
+							type:"POST",
+							dataType:"JSON",
+							data: {
+								pageIndex:vm.pageIndex,
+								uname: vm.sd.uname
+							},
+							success:function (resp){
+								vm.maxPage = resp.maxPage;
+								vm.dataList = resp.dataList;
+
+							},
+							error:function (resp){
+								layer.alert("系统错误")
+
+							}
+						});
+					}
+				}
+			});
+			vm.getData();
+
+		</script>
+	</body>
+</html>
