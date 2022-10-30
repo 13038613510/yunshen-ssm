@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.spoto.dao.DemoMapper">
+
+    <select id="getAll" resultType="org.spoto.model.Account">
+        SELECT * FROM account
+    </select>
+
+    <select id="add" parameterType="org.spoto.model.Account">
+        INSERT INTO account(name,passwd,sex,age,juese) VALUE (#{name},#{passwd},#{sex},#{age},#{juese})
+    </select>
+
+</mapper>
